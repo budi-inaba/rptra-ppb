@@ -332,6 +332,8 @@
         atm: document.getElementById('input-atm').value,
         kategori: document.getElementById('input-kategori').value,
         produk: checkedKomoditas.join(', ')
+         // ✅ TIMESTAMP
+    timestamp: new Date().toISOString()
     };
 
     if (payload.kk.length !== 16 || payload.ktp.length !== 16 || payload.atm.length !== 16) {
@@ -396,5 +398,6 @@
     </script>
 </body>
 </html>
+
 
 
