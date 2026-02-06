@@ -374,24 +374,44 @@
     }
 });
 
-
         function renderReview() {
-            document.getElementById('review-waktu').textContent = new Date(registeredData.timestamp)
-            .toLocaleString('id-ID', {
+    // ✅ Format waktu WIB
+    const waktuWIB = new Date(registeredData.timestamp)
+        .toLocaleString('id-ID', {
+            timeZone: 'Asia/Jakarta',
             day: '2-digit',
             month: 'long',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
-        });
+        }) + ' WIB';
 
-            document.getElementById('review-id').textContent = registeredData.id;
-            document.getElementById('review-kk').textContent = registeredData.kk;
-            document.getElementById('review-nama_pemilik').textContent = registeredData.nama_pemilik;
-            document.getElementById('review-produk').textContent = registeredData.produk;
-            const qrData = JSON.stringify({id: registeredData.id, kk: registeredData.kk});
-            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrData)}`;
-        }
+    // ✅ Tampilkan ke halaman review
+    document.getElementById('review-waktu').textContent = waktuWIB;
+    document.getElementById('review-id').textContent = registeredData.id;
+    document.getElementById('review-kk').textContent = registeredData.kk;
+    document.getElementById('review-nama_pemilik').textContent = registeredData.nama_pemilik;
+    document.getElementById('review-produk').textContent = registeredData.produk;
+
+    // 🔐 Masking KK (aman untuk QR)
+    const maskedKK =
+        registeredData.kk.substring(0, 4) +
+        '********' +
+        registeredData.kk.substring(12);
+
+    // ✅ DATA YANG MASUK KE QR CODE
+    const qrPayload = {
+        id: registeredData.id,
+        kk: maskedKK,
+        nama: registeredData.nama_pemilik,
+        produk: registeredData.produk,
+        waktu: waktuWIB
+    };
+
+    // ✅ Generate QR
+    document.getElementById('qr-image').src =
+        `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(JSON.stringify(qrPayload))}`;
+}
 
         function toggleLoading(isLoading, btnId) {
             const btn = document.getElementById(btnId);
