@@ -1,1 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPTRA - Sistem PPB</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden-view {
+            display: none !important;
+        }
+        .logo-container img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+        .logo-fallback {
+            background: #2563eb;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+        .input-error {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-gray-800">
+
+    <!-- KONFIGURASI -->
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqe1_vQv2TaNRTea-JOKv0f5ussNdAWL99l5IaB7NavbvINQIZdyqiJAgvVPPEQPORvQ/exec"; 
+        
+        // Database lokal sederhana untuk simulasi pengecekan duplikat Kartu Keluarga
+
+        function handleImgError(img) {
+            const container = img.parentElement;
+            img.style.display = 'none';
+            if (!container.querySelector('.logo-fallback')) {
+                const fallback = document.createElement('div');
+                fallback.className = 'logo-fallback';
+                fallback.innerText = 'RPTRA';
+                container.appendChild(fallback);
+            }
+        }
+    </script>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[60] flex flex-col gap-2"></div>
+
+    <!-- NAVBAR -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('form')">
+                <div class="logo-container">
+                    <!-- Updated Logo Path -->
+                    <img src="logo-rptra.png" 
+                         alt="Logo RPTRA" 
+                         class="h-10" 
+                         onerror="handleImgError(this)">
+                </div>
+                <div class="h-6 w-[1px] bg-gray-300"></div>
+                <span class="font-bold text-gray-800 text-lg tracking-tight">Program Pangan Bersubsidi</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container mx-auto p-4">
+
+        <!-- VIEW: FORM PENDAFTARAN -->
+        <div id="view-form" class="max-w-xl mx-auto py-6 fade-in">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <div class="bg-blue-600 p-6 text-white text-center relative overflow-hidden">
+                    <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-10 rounded-full"></div>
+                    
+                    <div class="relative z-10 flex flex-col items-center">
+                        <div class="bg-white p-2 rounded-lg mb-3 shadow-md logo-container">
+                            <!-- Updated Logo Path -->
+                            <img src="logo-rptra.png" 
+                                 alt="Logo RPTRA" 
+                                 class="h-10" 
+                                 onerror="handleImgError(this)">
+                        </div>
+                        <h2 class="text-2xl font-bold mb-1">Formulir Pangan Murah</h2>
+                        <p class="text-blue-100 text-sm">Pendaftaran Komoditas RPTRA</p>
+                    </div>
+                </div>
+                
+                <form id="form-pendaftaran" class="p-8 space-y-5">
+                    <!-- Kelurahan -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan</label>
+                        <input type="text" name="kelurahan" id="input-kelurahan" required
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition" 
+                            placeholder="Contoh : Petojo Utara">
+                    </div>
+
+                    <!-- No. Kartu Keluarga -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">No. Kartu Keluarga (16 Digit)</label>
+                        <input type="text" name="kk" id="input-kk" maxlength="16" required
+                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition font-mono"
+                            placeholder="317...">
+                        <p id="error-kk" class="hidden text-red-600 text-xs mt-1 font-medium">No. Kartu Keluarga sudah ada</p>
+                    </div>
+
+                    <!-- Nama & KTP -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pengisi Form</label>
+                            <input type="text" name="nama_pengisi" id="input-nama_pengisi" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition capitalize"
+                                placeholder="Masukkan Nama Anda">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">No. KTP (16 Digit)</label>
+                            <input type="text" name="ktp" id="input-ktp" maxlength="16" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition font-mono"
+                                placeholder="0000...">
+                        </div>
+                    </div>
+
+                    <!-- Nama Kartu & ATM -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Pemilik Kartu</label>
+                            <input type="text" name="nama_pemilik" id="input-nama_pemilik" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition capitalize"
+                                placeholder="Nama sesuai kartu ATM">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">No. Kartu ATM (16 Digit)</label>
+                            <input type="text" name="atm" id="input-atm" maxlength="16" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 transition font-mono"
+                                placeholder="0000...">
+                        </div>
+                    </div>
+
+                    <!-- Kategori & Komoditas -->
+                    <div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Penerima</label>
+                            <select name="kategori" id="input-kategori" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 bg-white">
+                                <option value="KJP">KJP</option>
+                                <option value="PJLP">PJLP</option>
+                                <option value="Kartu Lansia">Kartu Lansia</option>
+                                <option value="Kartu Disabilitas">Kartu Disabilitas</option>
+                                <option value="Dasawisma">Dasawisma</option>
+                                <option value="KAJ">KAJ</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Komoditas :</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                <label class="flex items-center space-x-3 p-2 bg-white rounded-lg border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition">
+                                    <input type="checkbox" name="komoditas" value="Ayam - 1 ekor" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Ayam - 1 ekor</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-2 bg-white rounded-lg border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition">
+                                    <input type="checkbox" name="komoditas" value="Daging Sapi - 1 kg" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Daging Sapi - 1 kg</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-2 bg-white rounded-lg border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition">
+                                    <input type="checkbox" name="komoditas" value="Telur - 1 tray" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Telur - 1 tray</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-2 bg-white rounded-lg border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition">
+                                    <input type="checkbox" name="komoditas" value="Beras - 5 kg" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Beras - 5 kg</span>
+                                </label>
+                                <label class="flex items-center space-x-3 p-2 bg-white rounded-lg border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition">
+                                    <input type="checkbox" name="komoditas" value="Ikan Kembung - 1 kg" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Ikan Kembung - 1 kg</span>
+                                </label>
+                                <label id="container-susu" class="flex items-center space-x-3 p-2 bg-white rounded-lg border border-gray-100 shadow-sm cursor-pointer hover:border-blue-300 transition">
+                                    <input type="checkbox" name="komoditas" value="Susu UHT" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">Susu UHT (Khusus KJP)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex justify-center items-center gap-2">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        <span>Cek Data & Daftar</span>
+                    </button>
+                    <div id="loading-indicator" class="hidden text-center text-blue-600">
+                        <i data-lucide="loader-2" class="animate-spin w-6 h-6 mx-auto"></i>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- VIEW: REVIEW & QR -->
+        <div id="view-review" class="max-w-md mx-auto py-10 px-4 hidden-view fade-in">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden text-center p-8">
+                <div class="logo-container mb-4 opacity-50">
+                    <!-- Updated Logo Path -->
+                    <img src="logo-rptra.png" 
+                         alt="Logo RPTRA" 
+                         class="h-8 mx-auto" 
+                         onerror="handleImgError(this)">
+                </div>
+                
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="check-circle" class="text-green-600 w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Pendaftaran Berhasil !</h2>
+                <p class="text-gray-500 text-sm mb-6">Tunjukkan QR Code ini kepada petugas verifikasi.</p>
+
+                <div class="bg-gray-50 p-6 rounded-xl border border-dashed border-gray-300 mb-6 flex justify-center">
+                    <img id="qr-image" src="" alt="QR Code" class="rounded-lg shadow-sm">
+                </div>
+
+                <div class="text-left space-y-3 text-sm border-t border-gray-100 pt-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">ID Registrasi</span>
+                        <span id="review-id" class="font-mono font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">No. Kartu Keluarga</span>
+                        <span id="review-kk" class="font-mono font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Nama Pemilik Kartu</span>
+                        <span id="review-nama_pemilik" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Komoditas</span>
+                        <span id="review-produk" class="font-medium text-blue-600 text-right max-w-[60%]"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Status</span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+                    </div>
+                </div>
+
+                <button onclick="switchView('form')" class="mt-8 text-blue-600 text-sm font-medium hover:underline">
+                    Buat Pendaftaran Baru
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- STATE & UTILS ---
+        let currentView = 'form';
+        let registeredData = null;
+
+        const views = {
+            form: document.getElementById('view-form'),
+            review: document.getElementById('view-review')
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            
+            const katSelect = document.getElementById('input-kategori');
+            const containerSusu = document.getElementById('container-susu');
+            
+            const checkSusuVisibility = (val) => {
+                const susuCheckbox = containerSusu.querySelector('input');
+                if(val === 'KJP') {
+                    containerSusu.classList.remove('hidden');
+                } else {
+                    containerSusu.classList.add('hidden');
+                    susuCheckbox.checked = false;
+                }
+            };
+
+            checkSusuVisibility(katSelect.value);
+            katSelect.addEventListener('change', (e) => checkSusuVisibility(e.target.value));
+
+            // VALIDASI INPUT NAMA (HURUF SAJA)
+            const restrictToLetters = (e) => {
+                e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+            };
+
+            document.getElementById('input-nama_pengisi').addEventListener('input', restrictToLetters);
+            document.getElementById('input-nama_pemilik').addEventListener('input', restrictToLetters);
+
+            // Validasi Angka & Input Lainnya
+            document.getElementById('input-kelurahan').addEventListener('input', e => e.target.value = e.target.value.replace(/[^a-zA-Z\s]/g, ''));
+            document.getElementById('input-ktp').addEventListener('input', e => e.target.value = e.target.value.replace(/[^0-9]/g, ''));
+            document.getElementById('input-atm').addEventListener('input', e => e.target.value = e.target.value.replace(/[^0-9]/g, ''));
+        });
+
+        function switchView(viewName) {
+            currentView = viewName;
+            Object.values(views).forEach(el => el.classList.add('hidden-view'));
+            views[viewName].classList.remove('hidden-view');
+            window.scrollTo(0,0);
+        }
+
+        document.getElementById('form-pendaftaran').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const checkedKomoditas = [...document.querySelectorAll('input[name="komoditas"]:checked')]
+        .map(c => c.value);
+
+    if (checkedKomoditas.length === 0) {
+        showToast('Pilih minimal satu jenis komoditas', 'error');
+        return;
+    }
+
+    const payload = {
+        kk: document.getElementById('input-kk').value,
+        kelurahan: document.getElementById('input-kelurahan').value.trim(),
+        nama_pengisi: document.getElementById('input-nama_pengisi').value.trim(),
+        ktp: document.getElementById('input-ktp').value,
+        nama_pemilik: document.getElementById('input-nama_pemilik').value.trim(),
+        atm: document.getElementById('input-atm').value,
+        kategori: document.getElementById('input-kategori').value,
+        produk: checkedKomoditas.join(', ')
+    };
+
+    if (payload.kk.length !== 16 || payload.ktp.length !== 16 || payload.atm.length !== 16) {
+        showToast('KK, KTP, dan ATM harus 16 digit', 'error');
+        return;
+    }
+
+    toggleLoading(true, 'btn-submit');
+
+    try {
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        toggleLoading(false, 'btn-submit');
+
+        if (!result.success) {
+            showToast(result.message, 'error');
+            return;
+        }
+
+        registeredData = { ...payload, id: result.id };
+        renderReview();
+        switchView('review');
+        showToast('Pendaftaran berhasil!');
+        e.target.reset();
+
+    } catch (err) {
+        toggleLoading(false, 'btn-submit');
+        showToast('Gagal menghubungi server', 'error');
+    }
+});
+
+
+        function renderReview() {
+            document.getElementById('review-id').textContent = registeredData.id;
+            document.getElementById('review-kk').textContent = registeredData.kk;
+            document.getElementById('review-nama_pemilik').textContent = registeredData.nama_pemilik;
+            document.getElementById('review-produk').textContent = registeredData.produk;
+            const qrData = JSON.stringify({id: registeredData.id, kk: registeredData.kk});
+            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrData)}`;
+        }
+
+        function toggleLoading(isLoading, btnId) {
+            const btn = document.getElementById(btnId);
+            const loader = document.getElementById('loading-indicator');
+            if(isLoading) { btn.classList.add('hidden'); loader.classList.remove('hidden'); }
+            else { btn.classList.remove('hidden'); loader.classList.add('hidden'); }
+        }
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `${type === 'success' ? 'bg-green-600' : 'bg-red-600'} px-6 py-3 rounded-lg shadow-lg text-white text-sm font-medium flex items-center gap-2 fade-in`;
+            el.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-4 h-4"></i> ${msg}`;
+            container.appendChild(el);
+            lucide.createIcons();
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+
 
