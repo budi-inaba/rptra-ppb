@@ -234,7 +234,7 @@
 
                 <div class="text-left space-y-3 text-sm border-t border-gray-100 pt-4">
                     <div class="flex justify-between">
-                    <span class="text-gray-500">Waktu Pendaftaran</span>
+                    <span class="text-gray-500">Waktu</span>
                     <span id="review-waktu" class="font-medium"></span>
                     </div>
 
@@ -365,7 +365,7 @@
         registeredData = { ...payload, id: result.id };
         renderReview();
         switchView('review');
-        showToast('Pendaftaran berhasil!');
+        showToast('Pendaftaran berhasil !');
         e.target.reset();
 
     } catch (err) {
