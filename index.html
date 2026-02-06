@@ -234,6 +234,11 @@
 
                 <div class="text-left space-y-3 text-sm border-t border-gray-100 pt-4">
                     <div class="flex justify-between">
+                    <span class="text-gray-500">Waktu Pendaftaran</span>
+                    <span id="review-waktu" class="font-medium"></span>
+                    </div>
+
+                    <div class="flex justify-between">
                         <span class="text-gray-500">ID Registrasi</span>
                         <span id="review-id" class="font-mono font-medium"></span>
                     </div>
@@ -332,6 +337,8 @@
         atm: document.getElementById('input-atm').value,
         kategori: document.getElementById('input-kategori').value,
         produk: checkedKomoditas.join(', ')
+         // ✅ TIMESTAMP
+    timestamp: new Date().toISOString()
     };
 
     if (payload.kk.length !== 16 || payload.ktp.length !== 16 || payload.atm.length !== 16) {
@@ -369,6 +376,15 @@
 
 
         function renderReview() {
+            document.getElementById('review-waktu').textContent = new Date(registeredData.timestamp)
+            .toLocaleString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
             document.getElementById('review-id').textContent = registeredData.id;
             document.getElementById('review-kk').textContent = registeredData.kk;
             document.getElementById('review-nama_pemilik').textContent = registeredData.nama_pemilik;
@@ -396,6 +412,7 @@
     </script>
 </body>
 </html>
+
 
 
 
