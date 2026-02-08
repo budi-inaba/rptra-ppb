@@ -428,7 +428,9 @@
         nama_pengisi: document.getElementById('input-nama_pengisi').value.trim(),
         ktp: document.getElementById('input-ktp').value,
         nama_pemilik: document.getElementById('input-nama_pemilik').value.trim(),
-        atm: document.getElementById('input-atm').value,
+        atm: document.getElementById('input-atm').valu
+            
+            e,
         kategori: document.getElementById('input-kategori').value,
         produk: checkedKomoditas.join(', '),
          // ✅ TIMESTAMP
@@ -468,6 +470,7 @@
         e.target.reset();
 
     } catch (err) {
+        loader.classList.remove('active');
         toggleLoading(false, 'btn-submit');
         showToast('Gagal menghubungi server', 'error');
     }
