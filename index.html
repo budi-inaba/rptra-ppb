@@ -373,6 +373,11 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+             // 🔐 Batasi KK hanya angka
+        document.getElementById('input-kk')
+        .addEventListener('input', e => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
             
             const katSelect = document.getElementById('input-kategori');
             const containerSusu = document.getElementById('container-susu');
@@ -428,9 +433,7 @@
         nama_pengisi: document.getElementById('input-nama_pengisi').value.trim(),
         ktp: document.getElementById('input-ktp').value,
         nama_pemilik: document.getElementById('input-nama_pemilik').value.trim(),
-        atm: document.getElementById('input-atm').valu
-            
-            e,
+        atm: document.getElementById('input-atm').value,
         kategori: document.getElementById('input-kategori').value,
         produk: checkedKomoditas.join(', '),
          // ✅ TIMESTAMP
